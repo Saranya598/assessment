@@ -23,6 +23,8 @@ public interface CustomerRepository extends MongoRepository<CustomerEntity, Stri
 	 * Find the entry by customer ID
 	 */
 	public Optional<CustomerEntity> findById(String id);
+	
+	public Optional<CustomerEntity> findByPhone(String phoneNum);
 
 	/**
 	 * Delete the entry by customer ID

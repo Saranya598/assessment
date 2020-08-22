@@ -31,8 +31,8 @@ public class CustomerManagerImpl {
 		ResponseDto responseDto = new ResponseDto();
 		ResponseEntity<?> response = null;
 		customerEntity = customerRepository.findById(id);
-		if (customerEntity == null) {
-			String status = customerRepository.findByStatus(id);
+		if (customerEntity != null) {
+			String status = customerRepository.findById(id).get().getStatus();
 			if (status.equalsIgnoreCase(Constants.USER_STATUS)) {
 				customerEntity = customerRepository.findById(id);
 				response = ResponseEntity.status(HttpStatus.ACCEPTED).body(customerEntity);
@@ -54,14 +54,14 @@ public class CustomerManagerImpl {
 		Optional<CustomerEntity> isExist = null;
 		ResponseDto responseDto = new ResponseDto();
 		ResponseEntity<?> response = null;
-		isExist = customerRepository.findById(customerEntity.getId());
-		if (isExist == null) {
+		isExist = customerRepository.findByPhone(customerEntity.getPhone());
+		if (!isExist.isPresent()) {
 			customerRepository.save(customerEntity);
 			response = ResponseEntity.status(HttpStatus.CREATED).body(customerEntity);
 		} else {
 			responseDto.setMessage("Entry exist");
-			responseDto.setStatusCode(HttpStatus.BAD_REQUEST.value());
-			response = ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseDto);
+			responseDto.setStatusCode(HttpStatus.CONFLICT.value());
+			response = ResponseEntity.status(HttpStatus.CONFLICT).body(responseDto);
 		}
 		return response;
 	}
@@ -71,7 +71,7 @@ public class CustomerManagerImpl {
 		ResponseDto responseDto = new ResponseDto();
 		ResponseEntity<?> response = null;
 		isExist = customerRepository.findById(id);
-		if (isExist == null) {
+		if (isExist.isPresent()) {
 			customerRepository.deleteById(id);
 			responseDto.setMessage("Deleted Successfully");
 			responseDto.setStatusCode(HttpStatus.ACCEPTED.value());
@@ -89,10 +89,10 @@ public class CustomerManagerImpl {
 		ResponseEntity<?> response = null;
 		Optional<CustomerEntity> isExist = null;
 		isExist = customerRepository.findById(customerEntity.getId());
-		if (isExist != null) {
+		if (isExist.isPresent()) {
 			customerRepository.deleteById(customerEntity.getId());
 			customerRepository.save(customerEntity);
-			response = ResponseEntity.status(HttpStatus.BAD_REQUEST).body(customerEntity);
+			response = ResponseEntity.status(HttpStatus.CREATED).body(customerEntity);
 		} else {
 			responseDto.setMessage(Constants.NO_ENTRY);
 			responseDto.setStatusCode(HttpStatus.BAD_REQUEST.value());
@@ -105,7 +105,6 @@ public class CustomerManagerImpl {
 		String authHeader = request.getHeader("Authorization").split(" ")[1];
 		byte[] decoded = Base64.getDecoder().decode(authHeader);
 		String originalString = new String(decoded, StandardCharsets.UTF_8);
-		System.out.println(originalString.toString());
 		return originalString;
 	}
 

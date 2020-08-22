@@ -37,7 +37,7 @@ public class CustomerController {
 		String auth = customerManagerImpl.checkUserAuthorization(request);
 		if (auth.split(":")[0].equals(Constants.USERNAME) && auth.split(":")[1].equals(Constants.PASSWORD)) {
 			customerList = customerManagerImpl.getCustomerDetails();
-			response = ResponseEntity.status(HttpStatus.BAD_REQUEST).body(customerList);
+			response = ResponseEntity.status(HttpStatus.ACCEPTED).body(customerList);
 		} else {
 			responseDto.setMessage(Constants.INVALID_AUTH);
 			responseDto.setStatusCode(HttpStatus.UNAUTHORIZED.value());

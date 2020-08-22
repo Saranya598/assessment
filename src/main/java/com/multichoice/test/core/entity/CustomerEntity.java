@@ -12,12 +12,13 @@ public class CustomerEntity {
 	private String last_name;
 	private String dob;
 	private String phone;
-	private String Status;
+	private String status;
+	
 	public String getStatus() {
-		return Status;
+		return status;
 	}
 	public void setStatus(String status) {
-		Status = status;
+		this.status = status;
 	}
 	public String getId() {
 		return id;
