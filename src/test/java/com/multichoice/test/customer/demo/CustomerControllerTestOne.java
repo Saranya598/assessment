@@ -8,6 +8,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.cache.CacheManager;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -24,9 +25,12 @@ public class CustomerControllerTestOne {
 	CustomerManagerImpl customerManagerImpl;
 	@Autowired
 	CustomerRepository customerRepository;
+	@Autowired
+	CacheManager cacheManager;
 
 	@Before
 	public void init() {
+		flushCache();
 		CustomerEntity customerEntity = new CustomerEntity();
 		customerRepository.deleteAll();
 		customerEntity.setDob("1994");
@@ -85,4 +89,9 @@ public class CustomerControllerTestOne {
 		assertEquals(0, customerManagerImpl.getCustomerDetails().size());
 	}
 
+	public void flushCache() {
+		for(String cacheName : cacheManager.getCacheNames()) {
+			cacheManager.getCache(cacheName).clear();
+		}
+	}
 }

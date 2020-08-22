@@ -8,6 +8,10 @@ import java.util.Optional;
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -17,15 +21,17 @@ import com.multichoice.test.core.entity.CustomerEntity;
 import com.multichoice.test.core.entity.ResponseDto;
 
 @Service
+@CacheConfig(cacheNames = "customerCache")
 public class CustomerManagerImpl {
 
 	@Autowired(required = true)
 	CustomerRepository customerRepository;
 
+	@Cacheable
 	public List<CustomerEntity> getCustomerDetails() {
 		return customerRepository.findAll();
 	}
-
+	
 	public ResponseEntity<?> getCustomerDetailsById(String id) {
 		Optional<CustomerEntity> customerEntity = null;
 		ResponseDto responseDto = new ResponseDto();
@@ -49,23 +55,23 @@ public class CustomerManagerImpl {
 		return response;
 	}
 
-	public ResponseEntity<?> onboardCustomer(CustomerEntity customerEntity) {
-
+	@CachePut(value = "onboardCustomer", key = "#customerEntity.phone")
+	public ResponseDto onboardCustomer(CustomerEntity customerEntity) {
 		Optional<CustomerEntity> isExist = null;
 		ResponseDto responseDto = new ResponseDto();
-		ResponseEntity<?> response = null;
 		isExist = customerRepository.findByPhone(customerEntity.getPhone());
 		if (!isExist.isPresent()) {
 			customerRepository.save(customerEntity);
-			response = ResponseEntity.status(HttpStatus.CREATED).body(customerEntity);
+			responseDto.setMessage("Customer onboarded successfully");
+			responseDto.setStatusCode(HttpStatus.CREATED.value());
 		} else {
 			responseDto.setMessage("Entry exist");
 			responseDto.setStatusCode(HttpStatus.CONFLICT.value());
-			response = ResponseEntity.status(HttpStatus.CONFLICT).body(responseDto);
 		}
-		return response;
+		return responseDto;
 	}
-
+	
+	@CacheEvict(value = "delete", key = "#id")
 	public ResponseEntity<?> removeCustomerById(String id) {
 		Optional<CustomerEntity> isExist = null;
 		ResponseDto responseDto = new ResponseDto();
@@ -83,22 +89,22 @@ public class CustomerManagerImpl {
 		}
 		return response;
 	}
-
-	public ResponseEntity<?> updateCustomer(CustomerEntity customerEntity) {
+	
+	@CachePut(value = "update", key = "#customerEntity.phone")
+	public ResponseDto updateCustomer(CustomerEntity customerEntity) {
 		ResponseDto responseDto = new ResponseDto();
-		ResponseEntity<?> response = null;
 		Optional<CustomerEntity> isExist = null;
 		isExist = customerRepository.findById(customerEntity.getId());
 		if (isExist.isPresent()) {
 			customerRepository.deleteById(customerEntity.getId());
 			customerRepository.save(customerEntity);
-			response = ResponseEntity.status(HttpStatus.CREATED).body(customerEntity);
+			responseDto.setMessage("Customer updated successfully");
+			responseDto.setStatusCode(HttpStatus.CREATED.value());
 		} else {
 			responseDto.setMessage(Constants.NO_ENTRY);
 			responseDto.setStatusCode(HttpStatus.BAD_REQUEST.value());
-			response = ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseDto);
 		}
-		return response;
+		return responseDto;
 	}
 
 	public String checkUserAuthorization(HttpServletRequest request) {
