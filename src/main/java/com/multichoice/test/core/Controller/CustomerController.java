@@ -3,9 +3,6 @@ package com.multichoice.test.core.Controller;
 import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.CachePut;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -17,7 +14,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.multichoice.test.core.Service.CustomerManagerImpl;
-import com.multichoice.test.core.entity.Constants;
 import com.multichoice.test.core.entity.CustomerEntity;
 import com.multichoice.test.core.entity.ResponseDto;
 
@@ -35,16 +31,8 @@ public class CustomerController {
 	public ResponseEntity<?> getCustomerDetails(HttpServletRequest request) {
 		List<CustomerEntity> customerList = null;
 		ResponseEntity<?> response = null;
-		ResponseDto responseDto = new ResponseDto();
-		String auth = customerManagerImpl.checkUserAuthorization(request);
-		if (auth.split(":")[0].equals(Constants.USERNAME) && auth.split(":")[1].equals(Constants.PASSWORD)) {
-			customerList = customerManagerImpl.getCustomerDetails();
-			response = ResponseEntity.status(HttpStatus.ACCEPTED).body(customerList);
-		} else {
-			responseDto.setMessage(Constants.INVALID_AUTH);
-			responseDto.setStatusCode(HttpStatus.UNAUTHORIZED.value());
-			response = ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseDto);
-		}
+		customerList = customerManagerImpl.getCustomerDetails();
+		response = ResponseEntity.status(HttpStatus.ACCEPTED).body(customerList);
 		return response;
 	}
 
@@ -56,15 +44,7 @@ public class CustomerController {
 	@GetMapping(value = "/{id}")
 	public ResponseEntity<?> getCustomerDetailsByName(@PathVariable("id") String id, HttpServletRequest request) {
 		ResponseEntity<?> response = null;
-		ResponseDto responseDto = new ResponseDto();
-		String auth = customerManagerImpl.checkUserAuthorization(request);
-		if (auth.split(":")[0].equals(Constants.USERNAME) && auth.split(":")[1].equals(Constants.PASSWORD)) {
-			response = customerManagerImpl.getCustomerDetailsById(id);
-		} else {
-			responseDto.setMessage(Constants.INVALID_AUTH);
-			responseDto.setStatusCode(HttpStatus.UNAUTHORIZED.value());
-			response = ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseDto);
-		}
+		response = customerManagerImpl.getCustomerDetailsById(id);
 		return response;
 	}
 
@@ -76,18 +56,11 @@ public class CustomerController {
 	public ResponseEntity<?> onboardCustomer(@RequestBody CustomerEntity customerEntity, HttpServletRequest request) {
 		ResponseEntity<?> response = null;
 		ResponseDto responseDto = new ResponseDto();
-		String auth = customerManagerImpl.checkUserAuthorization(request);
-		if (auth.split(":")[0].equals(Constants.USERNAME) && auth.split(":")[1].equals(Constants.PASSWORD)) {
-			responseDto = customerManagerImpl.onboardCustomer(customerEntity);
-			if (responseDto.getStatusCode() == HttpStatus.CONFLICT.value()) {
-				response = ResponseEntity.status(HttpStatus.CONFLICT).body(responseDto);
-			} else {
-				response = ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
-			}
+		responseDto = customerManagerImpl.onboardCustomer(customerEntity);
+		if (responseDto.getStatusCode() == HttpStatus.CONFLICT.value()) {
+			response = ResponseEntity.status(HttpStatus.CONFLICT).body(responseDto);
 		} else {
-			responseDto.setMessage(Constants.INVALID_AUTH);
-			responseDto.setStatusCode(HttpStatus.UNAUTHORIZED.value());
-			response = ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseDto);
+			response = ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
 		}
 		return response;
 	}
@@ -101,15 +74,7 @@ public class CustomerController {
 	@DeleteMapping(value = "/{id}")
 	public ResponseEntity<?> removeCustomer(@PathVariable("id") String id, HttpServletRequest request) {
 		ResponseEntity<?> response = null;
-		ResponseDto responseDto = new ResponseDto();
-		String auth = customerManagerImpl.checkUserAuthorization(request);
-		if (auth.split(":")[0].equals(Constants.USERNAME) && auth.split(":")[1].equals(Constants.PASSWORD)) {
-			response = customerManagerImpl.removeCustomerById(id);
-		} else {
-			responseDto.setMessage(Constants.INVALID_AUTH);
-			responseDto.setStatusCode(HttpStatus.UNAUTHORIZED.value());
-			response = ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseDto);
-		}
+		response = customerManagerImpl.removeCustomerById(id);
 		return response;
 	}
 
@@ -121,18 +86,11 @@ public class CustomerController {
 	public ResponseEntity<?> updateCustomer(@RequestBody CustomerEntity customerEntity, HttpServletRequest request) {
 		ResponseEntity<?> response = null;
 		ResponseDto responseDto = new ResponseDto();
-		String auth = customerManagerImpl.checkUserAuthorization(request);
-		if (auth.split(":")[0].equals(Constants.USERNAME) && auth.split(":")[1].equals(Constants.PASSWORD)) {
-			responseDto = customerManagerImpl.updateCustomer(customerEntity);
-			if (responseDto.getStatusCode() == HttpStatus.BAD_REQUEST.value()) {
-				response = ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseDto);
-			} else {
-				response = ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
-			}
-		} else {
-			responseDto.setMessage(Constants.INVALID_AUTH);
-			responseDto.setStatusCode(HttpStatus.UNAUTHORIZED.value());
+		responseDto = customerManagerImpl.updateCustomer(customerEntity);
+		if (responseDto.getStatusCode() == HttpStatus.BAD_REQUEST.value()) {
 			response = ResponseEntity.status(HttpStatus.BAD_REQUEST).body(responseDto);
+		} else {
+			response = ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
 		}
 		return response;
 	}

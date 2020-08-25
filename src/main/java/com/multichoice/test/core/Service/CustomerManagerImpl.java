@@ -1,11 +1,7 @@
 package com.multichoice.test.core.Service;
 
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
-
-import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheConfig;
@@ -106,12 +102,4 @@ public class CustomerManagerImpl {
 		}
 		return responseDto;
 	}
-
-	public String checkUserAuthorization(HttpServletRequest request) {
-		String authHeader = request.getHeader("Authorization").split(" ")[1];
-		byte[] decoded = Base64.getDecoder().decode(authHeader);
-		String originalString = new String(decoded, StandardCharsets.UTF_8);
-		return originalString;
-	}
-
 }
